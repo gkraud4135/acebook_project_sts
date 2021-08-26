@@ -1,0 +1,33 @@
+package com.lec206.acebook.chat;
+
+import java.util.ArrayList;
+
+import org.springframework.web.socket.WebSocketSession;
+
+public class ChatRoom {
+	
+	String id;
+    String roomname;
+    ArrayList<WebSocketSession> 연결들= new ArrayList<WebSocketSession>();
+	
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
+    public String getRoomname() {
+		return roomname;
+	}
+	public void setRoomname(String roomname) {
+		this.roomname = roomname;
+	}
+	public ArrayList<WebSocketSession> get연결들() {
+		return 연결들;
+	}
+	public void set연결들(ArrayList<WebSocketSession> 연결들) {
+		this.연결들 = 연결들;
+	}
+
+
+}

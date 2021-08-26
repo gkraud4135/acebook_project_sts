@@ -1,0 +1,45 @@
+package com.lec206.acebook.chat;
+
+import java.util.ArrayList;
+
+import org.springframework.web.socket.WebSocketSession;
+
+import com.lec206.acebook.vo_member.Member;
+
+public class Chat {
+	
+
+	//원시변수
+	private int chatroom_sn;
+	
+	//참조변수
+	private Member member_sn;
+	
+	//소켓
+    ArrayList<WebSocketSession> 연결들= new ArrayList<WebSocketSession>();
+
+	public int getChatroom_sn() {
+		return chatroom_sn;
+	}
+
+	public void setChatroom_sn(int chatroom_sn) {
+		this.chatroom_sn = chatroom_sn;
+	}
+
+	public Member getMember_sn() {
+		return member_sn;
+	}
+
+	public void setMember_sn(Member member_sn) {
+		this.member_sn = member_sn;
+	}
+	
+	public ArrayList<WebSocketSession> get연결들() {
+		return 연결들;
+	}
+	
+	public void set연결들(ArrayList<WebSocketSession> 연결들) {
+		this.연결들 = 연결들;
+	}	
+
+}

@@ -1,0 +1,132 @@
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="friendMapper">
+
+	<!-- resultMap{ -->
+		<resultMap id="friendDataMap" type="friendVO">
+		<result column="state" property="state" jdbcType="VARCHAR"/>
+		<result column="friend_sn" property="friend_sn.sn" jdbcType="INTEGER"/>
+		<association column="my_sn" property="my_sn" javaType="memberVO" select="memberMapper.findBySimple"/>
+		</resultMap>
+		
+		<resultMap id="recomendMap" type="memberSchoolVO">
+		<association column="sn" property="sn" javaType="memberVO" select="memberMapper.findSnNameProfile"/>
+		</resultMap>
+	<!-- }resultMap -->
+	
+	<!-- 친구요청수락{ -->
+		<!-- 친구신청{ -->	
+		<insert id="request" parameterType="map">
+			insert into friend(my_sn, friend_sn, state) values(#{my_sn},#{friend_sn},'신청중')
+		</insert>
+		<!-- 친구신청{ -->
+		
+		<!-- 친구신청중확인{ -->
+		<select id="checkrequest" parameterType="map" resultType="boolean">
+			select if(count(*)=1,1,0) from friend where my_sn=#{my_sn} and friend_sn=#{friend_sn} and state='신청중'
+		</select>
+		<!-- }친구신청중확인 -->
+		
+		<!-- 받은친구요청확인{(수정가능성 있음) -->
+		<select id="requests" parameterType="Integer" resultMap="friendDataMap">
+			select * from friend where state='신청중' and friend_sn=#{my_sn}
+		</select>
+		<!-- }받은친구요청확인 -->	
+		
+		<!-- 받은친구요청수락{ -->
+		<insert id="accept" parameterType="map">
+			insert into friend(my_sn, friend_sn, state) values(#{my_sn},#{friend_sn},'친구')
+		</insert>
+		<!-- }받은친구요청수락 -->
+		
+		<!-- 보낸친구요청업데이트{ -->
+		<update id="beFriend" parameterType="map">
+			update friend set state = '친구' where my_sn=#{friend_sn} and friend_sn=#{my_sn}
+		</update>
+		<!-- }보낸친구요청업데이트 -->
+		
+		<!-- 친구요청거절{ -->
+		<delete id="reject" parameterType="map">
+			delete from friend where my_sn = #{friend_sn} and friend_sn=#{my_sn}
+		</delete>
+		<!-- }친구요청거절 -->
+	<!-- }친구요청수락 -->
+	
+	<!-- 회원친구기능관련{ -->
+		<!-- 내가신청한친구목록{ 수정가능성 있음!-->
+		<select id="requested" parameterType="Integer" resultMap="memberMapper.findFriendResultMap">
+			select * from friend where my_sn=#{my_sn} and state='신청중'
+		</select>
+		<!-- }내가신청한친구목록 -->
+		
+		<!-- 친구차단{ -->
+		<update id="block" parameterType="map">
+			update friend set state = '차단' where my_sn=#{my_sn} and friend_sn=#{friend_sn};
+		</update>
+		<!-- }친구차단 -->
+		
+		<!-- 내친구목록출력{ -->
+		<select id="selectFriends" parameterType="Integer" resultType="friendVO">
+			select friend_sn from friend where my_sn=#{my_sn} and state = '친구'
+		</select>
+		<!-- }내친구목록출력 -->
+		
+		<!-- 내친구수출력Integer{ -->
+		<select id="friendCounter" parameterType="Integer" resultType="integer">
+			select count(*) from friend where my_sn=#{my_sn} and state='친구'
+		</select>
+		<!-- }내친구수출력Integer -->
+		
+		<!-- 친구삭제{ -->
+		<delete id="deleteFriend" parameterType="map">
+			delete from friend where my_sn=#{my_sn} and friend_sn = #{friend_sn}
+		</delete>
+		<!-- }친구삭제 -->
+	<!-- }회원친구기능관련 -->
+	
+	<!-- 회원추천친구기능{ -->
+		<!-- 학교로친구추천{ -->
+		<select id="recommendSchool" parameterType="map" resultMap="recomendMap">
+			select distinct(m.sn) from member as m 
+			left join (select friend_sn from friend where my_sn = 1 and state='친구') as fd 
+			on m.sn not in (select friend_sn from friend where my_sn = 1 and state='친구') 
+			left join memberschool as ms 
+			<choose>
+			<when test="#{schooltype eq 1}">
+			on ms.university is not null and m.sn = ms.sn 
+			where fd.friend_sn is not null and ms.university is not null and 
+			m.state = '회원' and ms.university = #{schoolvalue} and m.sn != #{sn} 
+			order by m.sn
+			</when>
+			<when test="#{schooltype eq 2}">
+			on ms.high is not null and m.sn = ms.sn 
+			where fd.friend_sn is not null and ms.high is not null and 
+			m.state = '회원' and ms.high = #{schoolvalue} and m.sn != #{sn} 
+			order by m.sn
+			</when>
+			<when test="#{schooltype eq 3}">
+			on ms.middle is not null and m.sn = ms.sn 
+			where fd.friend_sn is not null and ms.middle is not null and 
+			m.state = '회원' and ms.middle = #{schoolvalue} and m.sn != #{sn} 
+			order by m.sn
+			</when>
+			<otherwise>
+			on ms.row is not null and m.sn = ms.sn 
+			where fd.friend_sn is not null and ms.row is not null and 
+			m.state = '회원' and ms.row = #{schoolvalue} and m.sn != #{sn} 
+			order by m.sn
+			</otherwise>
+			</choose>  
+		</select>
+		<!-- }학교로친구추천 -->
+		
+		<!-- 나이로친구추천{ -->
+		<select id="sameage" parameterType="map" resultType="memberVO">
+			select name,age,sn from member where year(age) = year(#{age}) and sn != #{sn}
+		</select>
+		<!-- }나이로친구추천 -->
+	<!-- }회원추천친구기능 -->
+
+</mapper>

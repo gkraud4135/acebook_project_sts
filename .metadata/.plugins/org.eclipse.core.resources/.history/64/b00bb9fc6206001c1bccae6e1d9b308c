@@ -1,0 +1,82 @@
+package com.lec206.acebook.chat;
+
+import java.util.HashMap;
+import org.apache.ibatis.session.SqlSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lec206.acebook.vo_member.Member;
+
+@Repository
+@Component
+public class 문자웹소캣처리기 extends TextWebSocketHandler  {
+	
+	 @Autowired SqlSession mapper;
+			  
+	  private final static HashMap<String, ChatRoom> chatRooms = new HashMap<String, ChatRoom>();
+
+	  @Override
+	  protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+		  String JSON이텍스트화된메세지 = message.getPayload();//Payload : 전송하고자 하는 실제 데이터 ex) Serialized Date 등
+		  ObjectMapper 제이선변환기=new ObjectMapper(); 
+		  Chatting 받은채팅메세지 =제이선변환기.readValue(JSON이텍스트화된메세지,Chatting.class);
+		  
+		  ChatRoom 찾은채팅방 = new ChatRoom();
+		  찾은채팅방 =chatroom(받은채팅메세지.getChatroom_id());
+		  
+		  Member member = mapper.selectOne("memberMapper.findBySimple", Integer.parseInt(받은채팅메세지.getWriter().getName()));
+		  
+		  String 접속자들에게보낼메세지문자열=member.getName();//우선 보낸사람 
+		  if(받은채팅메세지.getState().equals("ENTER")) {
+			  
+			  찾은채팅방.get연결들().add(session);
+			  접속자들에게보낼메세지문자열="<b>"+접속자들에게보낼메세지문자열+"</b>님이 입장";
+		  }
+		  else if(받은채팅메세지.getState().equals("LEAVE")) {
+			  접속자들에게보낼메세지문자열=접속자들에게보낼메세지문자열+"님이 방 나감";
+		  }
+		  else if(받은채팅메세지.getState().equals("CHAT")) {
+			  
+			  접속자들에게보낼메세지문자열="<img class=profile src =/board/attach/"+member.getProfile()+" height=25 width=25/><b>"+member.getName()+"</b> : "+받은채팅메세지.getContents();
+			  받은채팅메세지.getWriter().setSn((Integer.parseInt(받은채팅메세지.getWriter().getName())));
+			  
+			  mapper.insert("boardMapper.savechatting", 받은채팅메세지);
+		  }
+		  
+		  //{"data":"별명:잘살아라"}
+		  TextMessage textMessage = new TextMessage(제이선변환기.writeValueAsString(접속자들에게보낼메세지문자열));
+		  
+		  //모든 방 접속자들에게 보냄
+		  for(WebSocketSession webSocketSession : 찾은채팅방.get연결들()){
+			  webSocketSession.sendMessage(textMessage);
+	      } 
+		  if(받은채팅메세지.getState().equals("LEAVE")) {
+			  session.close();
+			  찾은채팅방.get연결들().remove(session);
+		  }
+		  
+		  
+		  System.out.println("소캣처리기");
+	  }
+	 
+	  
+	   private ChatRoom chatroom(String id) {
+			
+			if(chatRooms.get(id)==null) {
+				
+			ChatRoom 새ChatRoom = new ChatRoom();
+			새ChatRoom.setId(id);
+			chatRooms.put(id, 새ChatRoom);
+			
+			}
+			
+			return chatRooms.get(id);
+	   	   }
+
+
+}

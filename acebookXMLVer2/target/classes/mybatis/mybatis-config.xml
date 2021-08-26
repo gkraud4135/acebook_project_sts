@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd" >
+
+<configuration>
+	<typeAliases>
+	
+	<!-- memberVO -->
+	
+	  <typeAlias alias="memberVO" type="com.lec206.acebook.vo_member.Member"/>
+
+	  <typeAlias alias="memberSchoolVO" type="com.lec206.acebook.vo_member.MemberSchool"/>
+
+	  <typeAlias alias="memberPostVO" type="com.lec206.acebook.vo_member.MemberPost"/>
+
+	  <typeAlias alias="loginVO" type="com.lec206.acebook.vo_member.Login"/>
+	  
+	  <!-- memberVOend -->
+	  
+	  <!-- boardVO -->
+	  
+	  <typeAlias alias="boardVO" type="com.lec206.acebook.vo_board.Board" />
+	  
+	  <typeAlias alias="attachVO" type="com.lec206.acebook.vo_board.Attach" />
+	
+	  <typeAlias alias="boardlikeVO" type="com.lec206.acebook.vo_board.BoardLike" /> 
+	  
+	  <typeAlias alias="commentVO" type="com.lec206.acebook.vo_board.Comment" />
+	  
+	  <typeAlias alias="commentlikeVO" type="com.lec206.acebook.vo_board.CommentLike" />
+
+	  <typeAlias alias="chattingVO" type="com.lec206.acebook.chat.Chatting" />
+
+	  <!-- boardVOend -->
+	  
+	  <!-- friendVO -->
+	  
+	  <typeAlias alias="friendVO" type="com.lec206.acebook.vo_friend.Friend" />
+	  
+	  <!-- friendVOend -->
+	  
+	  <!-- util -->
+	  
+	  <typeAlias alias="list" type="java.util.List" />
+	  <typeAlias alias="map" type="java.util.Map" />
+	  
+	   <!-- utilend -->
+
+	</typeAliases>	
+	<mappers>
+		<mapper resource="/mybatis/member.xml"/>
+		<mapper resource="/mybatis/board.xml"/>
+		<mapper resource="/mybatis/friend.xml"/>
+	</mappers>
+	
+</configuration>
