@@ -214,7 +214,7 @@ function 알림(sn,board){
 
 function 게시물상태(sn,board){
 	
-	if(sn != <%=session.getAttribute("sn")%>){
+	if(<%=member.getSn()%> != <%=session.getAttribute("sn")%>){
 		alert("권한이 없습니다");
 		closelayer();
 		return false;

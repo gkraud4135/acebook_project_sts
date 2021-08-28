@@ -18,7 +18,7 @@ window.onload = function (){
 	txtChatMessage = document.querySelector("#chat_message");
 	//출력용 
 	chatMessages = document.querySelector("#chat_messages");
-	webSocket = new WebSocket("ws://localhost:9001/chat");
+	webSocket = new WebSocket("ws://13.209.16.65:8080/chat");
 	webSocket.onopen=function(){
 		webSocket.send(JSON.stringify({chatroom_id:chatroomID, state:"ENTER",writer:{name:<%=session.getAttribute("sn")%>}}));
 	};

@@ -91,11 +91,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		]]>
 	</select>
 	
-	<!-- 게시물 좋아요VO 조회  **삭제** -->
-	<select id="boardlike" parameterType="int" resultMap="selectboardlike">
-		select * from boardlike where board_sn=#{sn}
-	</select>
-	
 	<!-- 게시물 좋아요 누른 member -->
 	<select id="likelist" parameterType="int" resultMap="selectboardlike">
 	select * from boardlike 

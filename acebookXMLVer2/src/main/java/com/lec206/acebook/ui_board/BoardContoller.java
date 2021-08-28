@@ -946,13 +946,17 @@ public class BoardContoller {
 			랜덤내용출력.add(내용들.get(randomcontents));
 			board.setContents(랜덤내용출력.get(0));
 			
-			BusinessResult br = membermanage.selectAll();
-			List<Member> members = (List<Member>)br.getValue();
-			int 랜덤작성자 = (int)((Math.random()*members.size()));
-			System.out.println("현제 작성자 번호 = " + 랜덤작성자);
 			
-			br = membermanage.findSimpleMember(랜덤작성자);
-			board.setWriter((Member)br.getValue());
+			BusinessResult br = membermanage.selectAll();
+			List<Member> member = (List<Member>)br.getValue();
+			
+			int ran = (int)(Math.random()*member.size());
+			int 회원번호 = member.get(ran).getSn();
+			br = membermanage.findSimpleMember(회원번호);
+			
+			Member randommember = (Member)br.getValue();
+			
+			board.setWriter(randommember);
 			
 			board.setState(게시물상태.전체);
 			

@@ -160,6 +160,63 @@ public class BoardDAO implements IBoardDAO {
 	
 	@Override
 	public void deleteboard(int sn) {
+		
+		Board board = mapper.selectOne("boardMapper.findboard",sn);
+		
+		//게시물 삭제시 첨부파일 삭제
+		List<Attach> attaches = null;
+		attaches = mapper.selectList("boardMapper.loadAttach",sn);
+		
+		if(attaches!=null) {
+			for(Attach attach : attaches) {
+				
+				//첨부파일이 회원 프로필이라면 default로 재변경
+				if(attach.getSn()==board.getWriter().getProfile()) {
+					
+					Map<String,Object> map = new HashMap<String, Object>();
+					map.put("sn", board.getWriter().getSn());
+					map.put("profile", 0);
+					
+					mapper.update("boardMapper.changeProfile", map);
+					
+				}
+				mapper.delete("boardMapper.deleteAttach", attach.getSn());
+			}
+		}
+		
+		//댓글 삭제
+		Map<String, Integer> map = new HashMap<String, Integer>();
+		map.put("sn", sn);
+		map.put("size", 1000); //임시
+		
+		List<Comment> comments = null;
+		comments = mapper.selectList("boardMapper.findCommentBySn",map);
+		
+		if(comments!=null) {
+			
+			for(Comment comment : comments) {
+			mapper.delete("boardMapper.deletecomment", comment.getSn());
+			}
+		}
+
+		
+		//좋아요 삭제
+		List<BoardLike> boardlikes = null;
+		boardlikes = mapper.selectList("boardMapper.likelist", sn);
+		
+		map = new HashMap<String, Integer>();
+		map.put("bno", sn);
+		
+		if(boardlikes!=null) {
+			
+			for(BoardLike boardlike : boardlikes) {
+				map.put("mno", boardlike.getWriter().getSn());
+				mapper.delete("boardMapper.offlike", map);
+			}
+		}
+		
+		
+		mapper.delete("boardMapper.deleteboard",sn);
 	}
 	
 	@Override
