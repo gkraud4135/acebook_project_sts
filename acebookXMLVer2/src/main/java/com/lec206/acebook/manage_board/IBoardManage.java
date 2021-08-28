@@ -112,6 +112,8 @@ public interface IBoardManage {
 	//랜덤 게시물 10개
 	BusinessResult randomboard10();
 
+	//좋아요 누르지 않은 게시물
+	BusinessResult randomonlike(int sn);
 	
 	
 

@@ -307,5 +307,11 @@ public class MemberDAO implements IMemberDAO{
 	
 		return mapper.selectList("memberMapper.selectAlltest");
 	}
+	
+	@Override
+	public List<Integer> notfriendlist(int sn) {
+	
+		return mapper.selectList("memberMapper.notfriendlist",sn);
+	}
 	//test_code
 }

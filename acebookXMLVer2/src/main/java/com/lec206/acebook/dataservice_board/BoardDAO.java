@@ -293,6 +293,12 @@ public class BoardDAO implements IBoardDAO {
 		return mapper.selectList("boardMapper.randomboard10");
 		
 	}
+	@Override
+	public List<Integer> randomonlike(int sn){
+		
+		return mapper.selectList("boardMapper.randomonlike",sn);
+		
+	}
 	
 	
 

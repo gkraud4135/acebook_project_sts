@@ -119,5 +119,7 @@ public interface IBoardDAO {
 	//testcode----------------------------------
 	//랜덤 게시물 10개
 	List<Integer> randomboard10();
+	//좋아요 누르지 않은 게시물들
+	List<Integer> randomonlike(int sn);
 	
 }

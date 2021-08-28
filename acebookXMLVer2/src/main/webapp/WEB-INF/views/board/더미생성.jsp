@@ -25,33 +25,44 @@
 <li class="plus" onclick="s6()">친구 게시물 생성</li>
 <li class="plus" onclick="s7()">프로필 랜덤 변경</li>
 <li class="plus" onclick="s8()">랜덤 댓글 생성</li>
+<li class="plus" onclick="s9()">랜덤 좋아요 등록</li>
 </ul>
 </body>
 </html>
 <script>
 function s1(){
-	location.href='/testmember'; 
+	location.href='/testmember';
+	alert('완료');
 }
 function s2(){
-	location.href='/testboard'; 
+	location.href='/testboard';
+	alert('완료');
 }  
 function s3(){  
-	location.href='/testfriend'; 
+	location.href='/testfriend';
+	alert('완료');
 }
 function s4(){  
-	location.href='/logintest'; 
+	location.href='/logintest';
+	alert('완료');
 }
 function s5(){  
-	location.href='/logouttest'; 
+	location.href='/logouttest';
+	alert('완료');
 }
 function s6(){  
-	location.href='/testboard1'; 
+	location.href='/testboard1';
+	alert('완료');
 }
 function s7(){  
 	location.href='/randomprofile'; 
 }
 function s8(){  
 	location.href='/randomcomment'; 
+	alert('완료');
+}
+function s9(){  
+	location.href='/randomlike'; 
 	alert('완료');
 }
 </script>

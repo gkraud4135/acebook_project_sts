@@ -222,16 +222,16 @@ public class MemberContoller {
 	
 		//3.경로지정
 	
-		System.out.println("아이디idisin창 으로 이동중");
+		System.out.println("아이디중복검사창으로 이동중");
 			
-		return "member/아이디idisin창";
+		return "member/아이디중복검사창";
 		
 	}
 	
 	@RequestMapping(value="id", method = RequestMethod.POST)
 	public ModelAndView postidisin(String id) {
 			
-		//1.요청페이지(아이디idisin.jsp)
+		//1.요청페이지(아이디중복검사.jsp)
 		ModelAndView mv = new ModelAndView();
 		
 		//사용가능==true : 아이디중복,사용불가 
@@ -239,7 +239,7 @@ public class MemberContoller {
 		boolean 사용가능 = true;
 		
 		//에러코드처리시에 뷰페이지 설정을 위해서, 위에다가 뷰페이지를 지정해줌.
-		mv.setViewName("member/아이디idisin창");
+		mv.setViewName("member/아이디중복검사창");
 				
 		//2.업무
 		BusinessResult br = membermanage.idisin(id);

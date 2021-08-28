@@ -77,7 +77,7 @@ public class MemberManage implements IMemberManage {
             mailHelper.setSubject("회원가입 이메일 인증");
             mailHelper.setText(new StringBuffer().append("<h1>[이메일 인증]</h1>")
             .append("<p>아래 링크를 클릭하시면 이메일 인증이 완료됩니다.</p>")
-            .append("<a href='http://localhost:9001/member/signUpConfirm?email=")
+            .append("<a href='http://13.209.16.65:8080/member/signUpConfirm?email=")
             .append(to)
             .append("&authKey=")
             .append(numStr)
@@ -408,6 +408,14 @@ public class MemberManage implements IMemberManage {
 	public BusinessResult testSelect() {
 		
 		List<Member> members = memberDAO.testSelectAll();
+		
+		return new BusinessResult(members);
+	}
+	
+	@Override
+	public BusinessResult notfriendlist(int sn) {
+		
+		List<Integer> members = memberDAO.notfriendlist(sn);
 		
 		return new BusinessResult(members);
 	}

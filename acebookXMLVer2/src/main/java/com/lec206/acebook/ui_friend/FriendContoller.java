@@ -1,8 +1,11 @@
 package com.lec206.acebook.ui_friend;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.mail.Session;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.lec206.acebook.manage_friend.IFriendManage;
+import com.lec206.acebook.manage_member.IMemberManage;
 import com.lec206.acebook.util.BusinessResult;
 import com.lec206.acebook.util.ERRORCODE;
 import com.lec206.acebook.util.로그인상태;
@@ -23,6 +27,7 @@ import com.lec206.acebook.vo_member.Member;
 public class FriendContoller {
 	
 	@Autowired IFriendManage friendmanage;
+	@Autowired IMemberManage membermanage;
 	
 	@RequestMapping("friend")
 	public String friend() {
@@ -459,90 +464,23 @@ public class FriendContoller {
 	}
 	
 	//testCode
-	/*
-	@RequestMappin("testfriend")
-	public String get친구테스트() {
+	
+	@RequestMapping(value = "testfriend", method = RequestMethod.GET)
+	public String get친구테스트(HttpSession session) {
 				
-		//1.요청페이지(.jsp)
+		//1.요청페이지(더미생성.jsp)
 		
+		int 회원번호 = (int)session.getAttribute("sn");
 		//2.업무
-		BusinessResult br = 회원관리자.전체회원출력();
+		BusinessResult br = membermanage.notfriendlist(회원번호);
 		
-		List<Member> members = (List<Member>)br.getValue();
-		//친구관계 더미데이터
-		//1번 회원부터 5번회원까지 친구더미데이터 생성 준비
-		for(int j = 1; j<2; j++) {
-			List<Integer> counter = new ArrayList<Integer>();
-			System.out.println(j+" 번 회원 친구 추가중 현제 카운터 크기는? "+counter.size());
-			br = 회원관리자.회원정보조회(j);
-			Member member = (Member)br.getValue();
-			int my_sn = j;
+		List<Integer> members = (List<Integer>)br.getValue();
+		
+		for(Integer intlist : members) {
 			
-			
-			if(member.getFriends()!=null) {
-				
-				counter.add(my_sn);
-				
-				for(Friend friend : member.getFriends()) {
-					
-					counter.add(friend.getFriend_sn().getSn());
-					
-					System.out.println("counter가 이미 친구인"+friend.getFriend_sn().getSn()+"를 저장했어요!");
-					
-				}
-				
-				}
-			
-				System.out.println(counter.size()+"현제 카운터의 크기입니다!");
-			
-		for(int i=0; i<5; i++) {
-			
-			int friend_sn;
-			Integer 확인번호=0;
-			Integer	랜덤회원=0;
-			int counting=0;
-			
-			while(true) {
-				
-				System.out.println("다시 시작!");
-				
-				랜덤회원 = (int)((Math.random()*members.size())+1);
-				
-				확인번호 = 랜덤회원;
-				
-				for(Integer count : counter) {
-
-					if(count==확인번호) {
-						
-						System.out.print(count+"저장된 번호");
-						System.out.println(확인번호+"돌고잇는 번호");
-						
-						System.out.println(확인번호+"랜덤번호");
-						
-						counting += 1;
-					
-					}
-					
-					if(counter.indexOf(count)==counter.size()-1 && counting==0) {
-						
-						System.out.println("증복되지 않은 회원을 찾앗어요!");
-
-					}
-
-					}
-				
-					friend_sn = 확인번호;
-					System.out.println(확인번호+"번 회원은 친구신청을 안했어요!");
-		            br = friendmanage.친구신청(my_sn, friend_sn);
-		            br = friendmanage.친구수락(friend_sn, my_sn);
-		            counter.add(friend_sn);
-		            
-		               System.out.println(확인번호+"를 counter에 추가하고 while문을 종료합니다!");
-		               System.out.println(counter.size()+"현제 카운터의 크기입니다.");
-		               break;
-				}
-
-			}
+            br = friendmanage.친구신청(회원번호, intlist);
+            br = friendmanage.친구수락(intlist, 회원번호);
+			System.out.println(회원번호+"와 "+intlist+" 친구완료");
 		}
 
 			
@@ -550,6 +488,6 @@ public class FriendContoller {
 		return "board/더미생성";
 	
 	}
-	*/
+	
 
 }

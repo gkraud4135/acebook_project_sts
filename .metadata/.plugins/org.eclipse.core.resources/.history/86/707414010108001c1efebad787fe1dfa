@@ -1,0 +1,233 @@
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="memberMapper">
+	<!--resultMap  -->
+	<resultMap id="findFriendResultMap" type="friendVO">
+		<result column="state" property="state" jdbcType="VARCHAR"/>
+		<result column="my_sn" property="my_sn.sn" jdbcType="INTEGER"/>
+		<association column="friend_sn" property="friend_sn" javaType="memberVO" select="memberMapper.findBySimple"/>
+	</resultMap>
+	<!--resultMap  -->
+	
+	<!-- 회원가입{ -->
+		<!-- 회원승인{ -->
+		<insert id="preparesave" parameterType="memberVO">
+			insert into member(id,name,password,gender,age,state) 
+			values(#{id},#{name},#{password},#{gender},#{age},'승인중')
+			<selectKey keyProperty="sn" resultType="Integer" order="AFTER">
+				select last_insert_id()
+			</selectKey>
+		</insert>
+		<!-- }회원승인중 -->
+	
+		<!-- 중복검사{ -->
+		<select id="isin" parameterType="String" resultType="boolean">
+			select if(count(*)=1,1,0) from member where id=#{id}
+		</select>
+		<!-- }중복검사 -->
+		
+		<!-- 인증코드생성{ -->
+		<update id="codeupdate" parameterType="map">
+			update member set code = #{code} where id=#{id}
+		</update>
+		<!-- }인증코드생성 -->
+		
+		<!-- 인증코드확인{ -->
+		<select id="codecheck" parameterType="map" resultType="int">
+			select count(*) from member where id=#{id} and code=#{code}
+		</select>
+		<!-- }인증코드확인 -->
+		
+		<!-- 회원승인{ -->
+		<update id="confirm" parameterType="String">
+			update member set state = '회원' where id=#{id}
+		</update>
+		<!-- }회원승인 -->
+	<!-- }회원가입 -->
+
+	<!-- 회원색인{ -->
+		<!-- 회원전체정보검색{ -->
+		<select id="findBySn" parameterType="Integer" resultType="memberVO">
+			select * from member where sn=#{sn}
+		</select>
+		<!-- }회원전체정보검색 -->
+		
+		<!-- 필수정보검색{ -->
+		<select id="findBySimple" parameterType="Integer" resultType="memberVO">
+			select sn,name,age,friendcount,profile,backprofile from member where sn=#{sn}
+		</select>
+		<!-- }필수정보검색 -->
+		
+		<!-- 최소정보검색{ -->
+		<select id="findSnNameProfile" parameterType="Integer" resultType="memberVO">
+			select sn,name,profile from member where sn=#{sn}
+		</select>
+		<!-- 최소정보검색{ -->
+		
+		<!-- 모든회원검색{ -->
+		<select id="selectAll" resultType="memberVO">
+			select * from member where state='회원'
+		</select>
+		<!-- }모든회원검색 -->
+	<!-- }회원색인 -->
+	
+	<!-- 회원상세정보{ -->
+		<!-- 학교관련{ -->
+			<!-- 학교정보VO{ -->
+			<select id="findSchool" parameterType="Integer" resultType="memberSchoolVO">
+				select * from memberschool where sn=#{sn}
+			</select>
+			<!-- }학교정보VO -->
+			
+			<!-- 학교정보저장{ -->
+			<insert id="saveSchool" parameterType="memberSchoolVO">
+				insert into memberschool(sn,row,middle,high,university) values(#{sn.sn},#{row},#{middle},#{high},#{university})
+			</insert>
+			<!-- }학교정보저장 -->
+			
+			<!-- 학교정보DB저장여부확인{ -->
+			<select id="schoolCounter" parameterType="Integer" resultType="Integer">
+				select if(count(*)=1,1,0) from memberschool where sn=#{sn}
+			</select>
+			<!-- }학교정보DB저장여부확인 -->
+			
+			<!-- 학교정보수정{ -->
+			<update id="updateSchool" parameterType="memberSchoolVO">
+				update memberschool set row =  case #{row} when '' then null else #{row} end, middle = case #{middle} when '' then null else #{middle} end, high = case #{high} when '' then null else #{high} end, university = case #{university} when '' then null else #{university} end where sn=#{sn.sn}
+			</update>
+			<!-- 학교정보수정{ -->
+		<!-- 학교관련{ -->
+		
+		<!-- 주소관련{ -->
+			<!-- 주소정보VO{ -->
+			<select id="findPost" parameterType="Integer" resultType="memberPostVO">
+				select * from memberpost where sn=#{sn}
+			</select>
+			<!-- }주소정보VO -->
+			
+			<!-- 주소정보저장{ -->
+			<insert id="savePost" parameterType="memberPostVO">
+				insert into memberpost(sn,post,address,addresstail,birthplace) values(#{sn.sn},#{post},#{address},#{addresstail},#{birthplace})
+			</insert>
+			<!-- }주소정보저장 -->
+			
+			<!-- 주소정보DB저장여부확인{ -->
+			<select id="postCounter" parameterType="Integer" resultType="Integer">
+				select if(count(*)=1,1,0) from memberpost where sn=#{sn}
+			</select>
+			<!-- }주소정보DB저장여부확인 -->
+			
+			<!-- 주소정보수정{ -->
+			<update id="updatePost" parameterType="memberPostVO">
+				update memberpost set post=#{post},address=#{address},addresstail=#{addresstail},birthplace=#{birthplace} where sn=#{sn.sn}
+			</update>
+			<!-- }주소정보수정 -->
+		<!-- }주소관련 -->
+	<!-- }회원상세정보 -->
+	
+	
+	<!-- 로그인관리{ -->
+		<!-- 로그인정보테이블에저장{ -->
+		<insert id="loginsave" parameterType="Integer">
+			insert into state(sn) values (#{sn})
+		</insert>
+		<!-- }로그인정보테이블에저장 -->
+		
+		<!-- 테이블의로그인정보불러오기{ -->
+		<select id="findLoginBySn" parameterType="int" resultType="loginVO">
+			select * from state where sn=#{sn}
+		</select>
+		<!-- }테이블의로그인정보불러오기 -->
+
+		<!-- 로그인{ -->
+		<select id="login" parameterType="map" resultType="java.util.HashMap">
+			select sn,name,id from member where id=#{id} and password=#{password}
+		</select>
+		<!-- }로그인 -->
+		
+		<!-- 로그인전회원상태확인{ -->
+		<select id="logincheck" parameterType="map" resultType="map">
+			select sn,name,state,id from member where id=#{id} and password=#{password} and '승인중'
+		</select>
+		<!-- }로그인전회원상태확인 -->
+		
+		<!-- 로그인등록여부확인{ -->
+		<select id="logcounter" parameterType="Integer" resultType="Integer">
+			Select if(count(*)=1,1,0) from state where sn=#{sn}
+		</select>
+		<!-- }로그인등록여부확인 -->
+		
+		<!-- 로그인시상태업데이트{ -->
+		<update id="loginstate" parameterType="Integer">
+			update state set state = '접속중', loginTime = current_timestamp() where sn=#{sn};
+		</update>
+		<!-- }로그인시상태업데이트 -->
+		
+		<!-- 로그아웃시상태업데이트{ -->
+		<update id="logoutstate" parameterType="Integer">
+			update state set state = '로그오프', logoutTime = current_timestamp() where sn=#{sn};
+		</update>
+		<!-- }로그아웃시상태업데이트 -->
+	<!-- }로그인관리 -->
+	
+	<!-- 친구정보관리{ -->
+		<!-- 내친구목록{ -->
+		<select id="findFriendBySn" parameterType="Integer" resultMap="findFriendResultMap">
+			select * from friend where my_sn=#{my_sn}
+		</select>
+		<!-- }내친구목록 -->
+	<!-- }친구정보관리 -->
+	
+	<!-- ip관리{ -->
+		<!-- 아이피 로그인기록 조회{ -->
+		<select id="checkip" parameterType="map" resultType="int">
+			select count(*) from ip where sn=#{sn} and ip=#{ip}
+		</select>
+		<!-- }아이피 로그인기록 조회 -->
+		
+		<!-- 아이피당 로그인기록등록{ -->
+		<insert id="saveip" parameterType="map">
+			insert into ip values (#{sn},#{ip})
+		</insert>
+		<!-- }아이피당 로그인기록등록 -->
+		
+		<!-- 아이피당 멤버들 가져오기{ -->
+		<select id="findmemberByip" parameterType="String" resultType="memberVO">
+			select id,member.sn,name,friendcount,profile from member join ip on member.sn = ip.sn where ip=#{ip}
+		</select>
+		<!-- }아이피당 멤버들 가져오기 -->
+		
+		<!-- 아이피 로그인기록 삭제{ -->
+		<delete id="deleteip" parameterType="int">
+			delete from ip where sn=#{sn}
+		</delete>
+		<!-- }아이피 로그인기록 삭제 -->
+	<!-- }ip관리 -->
+	
+	<!-- testXML{ -->
+		<!-- 회원승인{ -->
+		<insert id="testinsert" parameterType="memberVO">
+			insert into member(id,name,password,gender,age,state) 
+			values(#{id},#{name},#{password},#{gender},#{age},'회원')
+			<selectKey keyProperty="sn" resultType="Integer" order="AFTER">
+				select last_insert_id()
+			</selectKey>
+		</insert>
+		<!-- }회원승인중 -->
+		
+		<!-- 모든회원검색{ -->
+		<select id="selectAlltest" resultType="memberVO">
+			select * from member
+		</select>
+		
+		<select id="notfriendlist" parameterType="sn" resultType="int">
+		select * from member where sn 
+		not in (select friend_sn from friend where my_sn =#{sn} and state = '친구')and 
+		sn not in (#{sn})
+		</select>
+		<!-- }모든회원검색 -->
+	<!-- }testXML -->
+	
+</mapper>

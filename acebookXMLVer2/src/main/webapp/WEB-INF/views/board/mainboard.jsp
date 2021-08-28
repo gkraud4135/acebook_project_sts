@@ -145,7 +145,7 @@ function 게시물로드(){
 		                			"<option value=\"2\">신고</option>\r\n" + 
 		                			"</select></div>"
 		                			+"<div class=\"divcotents\">내용"+item.contents+"<div id=photo"+item.sn+"></div>"+"</div>"
-	                				+item.wdate+"<br>박스번호: box"+size+" 게시물번호:"+item.sn+"<div id=box"+item.sn+">"+"</div>"+"<div id=like"+item.sn+">"+"</div>"+"<input type=\"button\" onclick=\"댓글("+item.sn+","+<%=member.getProfile()%>+",0)\" id=\"comments"+item.sn+"\" value=\"댓글\" /><div id=comment"+item.sn+">"+"</div><div id=photo"+item.sn+">"+"</div>"+'</div>');	                		
+	                				+item.wdate+"<br>박스번호: box"+size+" 게시물번호:"+item.sn+"<div class=box"+item.sn+">"+"</div>"+"<div class=like"+item.sn+">"+"</div>"+"<input type=\"button\" onclick=\"댓글("+item.sn+","+<%=member.getProfile()%>+",0)\" class=\"comments"+item.sn+"\" value=\"댓글\" /><div class=\"comment"+item.sn+"\">"+"</div><div id=photo"+item.sn+">"+"</div>"+'</div>');	                		
 	                		좋아요갯수(item.sn);
 	                		좋아요여부(item.sn,<%=session.getAttribute("sn")%>);
 	                  		사진출력(item.sn);
@@ -191,7 +191,7 @@ function 좋아요여부(board,writer){
 	 $.ajax({url:"/likeis",  
 	     success:function(result,status){
 	    	 console.log(result),
-	    	 $("#like"+board).html(result),
+	    	 $(".like"+board).html(result),
 	    	 console.log("성공"); 
 	     	},
 	    	 error:function(){
@@ -209,7 +209,7 @@ function 좋아요갯수(sn){
 	 $.ajax({url:"/like/"+sn,
 	     success:function(result,status){
 	    	 console.log(result),
-	    	 $("#box"+sn).html(result),
+	    	 $(".box"+sn).html(result),
 	    	 console.log("등록되었습니다"); 
 
 	     	},
@@ -223,13 +223,13 @@ function 좋아요갯수(sn){
 
 function 댓글(board,profile,commentsize){
 
-	var or = $("#comments"+board).val(); 
+	var or = $(".comments"+board).val(); 
 	if(or=="댓글"){
 		댓글출력(board,profile,commentsize);
 	}
 	else{
-		$("#comments"+board).val("댓글");
-		$("#comment"+board).empty();
+		$(".comments"+board).val("댓글");
+		$(".comment"+board).empty();
 	}
 }
 
@@ -238,8 +238,8 @@ function 댓글출력(board,profile,commentsize){
 	 $.ajax({url:"/comment/"+board,
 		    data : {"profile":profile,"commentsize":commentsize},
      success : function(data) {
-     $("#comment"+board).html(data),
-     $("#comments"+board).val("댓글닫기");
+     $(".comment"+board).html(data),
+     $(".comments"+board).val("댓글닫기");
 	    },
 	    error:function(){console.log("실패");},
      type:"POST"
@@ -247,6 +247,14 @@ function 댓글출력(board,profile,commentsize){
 }
 
 function 댓글달기(board){
+	
+	if($("#commentcontent"+board).val()==""){
+		alert("내용을 입력해주십시오");
+		$("#commentcontent"+board).focus();
+		return false;
+	}
+	
+	
 	var comment={contents:$("#commentcontent"+board).val(), "writer":{sn:<%=session.getAttribute("sn")%>},"board":{sn:board}};
 	console.log(comment);
 	 $.ajax({url:"/comment",  

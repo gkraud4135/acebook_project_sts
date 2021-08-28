@@ -1,0 +1,339 @@
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="boardMapper">
+
+	<!-- 게시물출력매핑 -->
+	<resultMap id="findBySnMap" type="boardVO">
+		<result column="sn"  property="sn" jdbcType="INTEGER"/>
+		<result column="contents" property="contents" jdbcType="VARCHAR"/>
+		<result column="wdate" property="wdate" jdbcType="VARCHAR"/>
+		<result column="state" property="state" jdbcType="VARCHAR"/>
+		<association column="writer" property="writer" javaType="memberVO" select="memberMapper.findBySimple"/>
+	</resultMap>
+	
+	<!-- 좋아요출력매핑 -->
+	<resultMap id="selectboardlike" type="boardlikeVO" autoMapping="true">
+		<result column="like"  property="like" jdbcType="INTEGER"/>
+		<result column="report"  property="report" jdbcType="INTEGER"/>
+		<result column="writer" property="writer.sn" jdbcType="INTEGER"/>
+		<result column="profile" property="writer.profile" jdbcType="INTEGER"/>
+		<result column="name" property="writer.name" jdbcType="VARCHAR"/>
+		<result column="board_sn" property="board.sn" jdbcType="INTEGER"/>
+	</resultMap>
+
+	
+	<!-- 첨부파일매핑 -->
+	<resultMap type="attachVO" id="findattach">
+		<result property="sn" column="sn" jdbcType="INTEGER"/>
+		<result property="filename" column="filename" jdbcType="VARCHAR"/>
+		<result property="filesize" column="filesize" jdbcType="INTEGER"/>
+		<result property="board.sn" column="board_sn" jdbcType="INTEGER"/>
+		<result property="board.writer.id" column="id" jdbcType="INTEGER"/> 
+	</resultMap>
+	
+	<!-- 첨부파일매핑2 -->
+	<resultMap type="attachVO" id="loadAttachMap">
+		<result property="sn" column="sn" jdbcType="INTEGER"/>
+		<result property="filename" column="filename" jdbcType="VARCHAR"/>
+		<result property="filesize" column="filesize" jdbcType="INTEGER"/>
+		<result property="board.sn" column="board_sn" jdbcType="INTEGER"/>
+	</resultMap>
+
+	<!-- 댓글출력매핑 -->
+	<resultMap id="selectCommentmap" type="commentVO" >
+		<result column="comment.sn" property="sn" jdbcType="INTEGER"/>
+		<result column="contents" property="contents" jdbcType="VARCHAR"/>
+		<result column="profile" property="writer.profile" jdbcType="INTEGER"/>
+		<result column="name" property="writer.name" jdbcType="VARCHAR"/>
+		<result column="id" property="writer.id" jdbcType="VARCHAR"/>
+	</resultMap>
+	
+	<!-- 채팅출력매핑 -->
+	<resultMap id="chattingMap" type="chattingVO">
+		<result column="sn"  property="sn" jdbcType="INTEGER"/>
+		<result column="chatroom_id"  property="chatroom_id" jdbcType="VARCHAR"/>
+		<result column="contents"  property="contents" jdbcType="VARCHAR"/>
+		<result column="rdate" property="rdate" jdbcType="VARCHAR"/>
+		<association column="writer" property="writer" javaType="memberVO" select="memberMapper.findBySimple"/>
+	</resultMap>
+
+<!-- board -->
+
+	<!-- 게시물등록 -->
+	<insert id="save" parameterType="boardVO" >
+		insert into board(contents,writer,state)
+		values(#{contents},#{writer.sn},#{state})
+		<selectKey keyProperty="sn" resultType="int" order="AFTER">
+			select last_insert_id()
+		</selectKey>
+	</insert>
+
+	<!-- 전체공개 게시물 출력 -->
+	<select id="selectAll" parameterType="int" resultMap="findBySnMap">
+		select * from board where state='전체' and writer not in (#{sn}) order by rand() limit 3;
+	</select>
+	
+	<!-- 내 게시물 출력 -->
+	<select id="myboard" parameterType="map" resultMap="findBySnMap">
+		select * from board where writer=#{sn} order by wdate desc limit #{size}, 3
+	</select>
+	
+	<!-- mainboard 출력글-->
+	<select id="mainboard" parameterType="map" resultMap="findBySnMap">
+		<![CDATA[
+			select *from board LEFT JOIN friend ON board.writer = friend.my_sn join state on friend.friend_sn=state.sn 
+			where friend.friend_sn=#{sn} 
+			and (board.state='전체' or board.state='친구') 
+			and wdate<viewtime and wdate>lastviewtime 
+			order by board.sn desc limit #{size}, 3
+		]]>
+	</select>
+	
+	<!-- 게시물 좋아요VO 조회  **삭제** -->
+	<select id="boardlike" parameterType="int" resultMap="selectboardlike">
+		select * from boardlike where board_sn=#{sn}
+	</select>
+	
+	<!-- 게시물 좋아요 누른 member -->
+	<select id="likelist" parameterType="int" resultMap="selectboardlike">
+	select * from boardlike 
+	join member on boardlike.writer = member.sn 
+	where board_sn=#{sn}
+	</select>
+	
+	<!-- 게시물당 좋아요갯수 조회 -->
+	<select id="likes" parameterType="int" resultType="int">
+		select count(*) from boardlike where board_sn=#{no}
+	</select>
+	
+	<!-- 좋아요 실행 -->
+	<insert id="onlike" parameterType="map">
+		insert into boardlike(board_sn,writer,boardlike.like)values(#{bno},#{mno},1)
+	</insert>
+	
+	<!-- 좋아요 누르지 않은 게시물 -->
+	<select id="randomonlike" parameterType="int" resultType="int">
+		select sn from board where writer not in 
+		(select writer from boardlike where writer =#{sn}) order by rand() limit 3
+	</select>
+	
+	<!-- 좋아요 취소 -->
+	<insert id="offlike" parameterType="map">
+		delete from boardlike where board_sn=#{bno} and writer=#{mno}
+	</insert>
+	
+	<!-- 좋아요 여부 -->
+	<select id="likeis" parameterType="map" resultType="int">
+		select count(*) from boardlike where board_sn=#{bno} and writer=#{mno}
+	</select>
+	
+	<!-- 댓글 출력 -->
+	<select id="findCommentBySn" parameterType="map" resultMap="selectCommentmap">
+		select * from comment join member on comment.writer = member.sn 
+		where board_sn = #{sn} order by comment.sn desc limit 0,#{size}
+	</select>
+	
+	<!-- 게시물당 댓글 갯수 조회 -->
+	<select id="comments" parameterType="int" resultType="int">
+		select count(*) from comment where board_sn=#{sn}
+	</select>
+	
+	<!-- 댓글 등록 -->
+	<insert id="savecomment" parameterType="commentVO">
+		insert into comment(board_sn,writer,contents)values(#{board.sn},#{writer.sn},#{contents})
+	<selectKey keyProperty="sn" resultType="int" order="AFTER">
+		select last_insert_id()
+	</selectKey>
+	</insert>
+	
+	<!-- 댓글 한개 출력 -->
+	<select id="selectOneComment" parameterType="int" resultMap="selectCommentmap">
+		select * from comment join member on comment.writer = member.sn
+		where comment.sn = #{sn}
+	</select>
+	
+	<!-- 댓글 삭제 -->
+	<delete id="deletecomment" parameterType="int">
+		delete from comment where sn=#{sn}
+	</delete>
+	
+	<!-- 새로운 게시물 갯수 확인 -->
+	<select id="checknewboard" parameterType="int" resultType="int">
+		<![CDATA[
+			select count(*) from board 
+			LEFT JOIN friend ON board.writer = friend.my_sn 
+			join state on friend.friend_sn=state.sn 
+			where friend.friend_sn=#{sn} 
+			and (board.state='전체' or board.state='친구') 
+			and wdate>viewtime order by board.sn desc
+		]]>
+	</select>
+	
+	<!-- 광고 게시물 출력 -->
+	<select id="advertising" resultType="attachVO" >
+		select * from attach 
+		join board on board.sn = attach.board_sn
+		where board.state='광고' 
+		order by rand() limit 1
+	</select>
+	
+	<!-- 전체 게시물 갯수 -->
+	<select id="numberofboard" parameterType="int" resultType="int">
+		<![CDATA[
+			select count(*) from board 
+			LEFT JOIN friend ON board.writer = friend.my_sn 
+			join state on friend.friend_sn=state.sn 
+			where friend.friend_sn=#{sn} 
+			and (board.state='전체' or board.state='친구') 
+			and wdate>lastviewtime and  wdate<viewtime
+		]]>
+	</select>
+	
+	<!-- 게시물 삭제 -->
+	<delete id="deleteboard" parameterType="int">
+		delete from board where sn=#{sn}
+	</delete>
+	
+	<!-- 보드번호로 게시물찾기 -->
+	<select id="findboard" parameterType="int" resultMap="findBySnMap">
+		select * from board where sn=#{sn}
+	</select>
+	
+	<!-- 게시물 수정 -->
+	<update id="modifyboard" parameterType="boardVO">
+		UPDATE board SET contents=#{contents} 
+		where sn=#{sn}
+	</update>
+	
+	<!-- 게시물 신고 -->
+	<update id="reportboard" parameterType="int">
+		UPDATE board SET state='차단' where sn=#{sn}
+	</update>
+	
+	<!-- 게시물 공유 등록 -->
+	<insert id="savesharing" parameterType="map">
+		insert into sharing values(#{to},#{get})
+	</insert>
+	
+	<!-- 게시물번호로 공유번호 가져오기 -->
+	<select id="getsharingsn" parameterType="int" resultType="int">
+		select getboard from sharing where board_sn=#{sn}
+	</select>
+	
+	<!-- 공유 삭제 -->
+	<delete id="deletesharing" parameterType="int">
+		delete from sharing where board_sn=#{sn}
+	</delete>
+	
+	<!-- 유저검색 -->
+	<select id="selectuser" parameterType="String" resultType="memberVO">
+		select name,sn,profile from member where name like CONCAT('%',#{name},'%') limit 10
+	</select>
+	
+	<!-- 랜덤 게시물 10개{ -->
+	<select id="randomboard10" resultType="Integer">
+		select sn from board where state = "전체" or state="프로필"or state="백프로필" order by rand() limit 10;
+	</select>
+	<!-- }랜덤 게시물 10개 -->
+	
+<!-- board-end -->
+	
+<!-- attach -->
+	
+	<!-- 첨부파일 저장 -->				
+ 	<insert id="saveAttachs" parameterType="list">
+		insert into attach(filename,filesize,board_sn) values
+			<foreach collection="list" item='attach' index='index' separator=','>
+				(#{attach.filename},#{attach.filesize},#{attach.board.sn})
+			</foreach>
+	</insert> 
+	
+	<!-- 첨부파일list -->
+	<select id="loadAttach" parameterType="int"  resultMap="loadAttachMap">
+		select * from attach where board_sn = #{sn}
+	</select>
+	
+	<!-- 첨부사진 찾기 -->
+	<select id="findattach" parameterType="int" resultMap="findattach">
+		select * from attach 
+		join board on board.sn = attach.board_sn 
+		join member on board.writer = member.sn 
+		where attach.sn =#{sn}
+	</select>
+	
+	<!-- 보드번호로 게시물번호찾기 -->
+	<select id="findattachsn" parameterType="int" resultType="int">
+		select attach.sn from attach 
+		join board on attach.board_sn = board.sn 
+		where board.sn=#{sn}
+	</select>
+	
+	<!-- 첨부파일삭제 -->
+	<delete id="deleteAttach" parameterType="int">
+		delete from attach where sn=#{sn}
+	</delete>
+	
+<!-- attach - End-->
+	
+	
+<!-- 회원 관리 -->
+	
+	<!-- 프로필 변경 -->
+	<update id="changeProfile" parameterType="map">
+	update member set profile=#{profile} 
+	where sn=#{sn}
+	</update>
+	
+	<!-- 백프로필 변경 -->
+	<update id="changeBackProfile" parameterType="map">
+	update member set backprofile=#{profile} 
+	where sn=#{sn}
+	</update>
+	
+	<!-- 현재 뷰타임 변경 -->
+	<update id="viewtimeupdate" parameterType="int">
+	update state set lastviewtime = viewtime 
+	where sn=#{sn}
+	</update>
+	
+	<!-- 마지막 뷰타임 변경 -->
+	<update id="lasttimeupdate" parameterType="int">
+	update state set viewtime=current_timestamp() 
+	where sn=#{sn}
+	</update>
+	
+<!-- 회원 관리 -->
+	
+<!-- 채팅 -->
+	<!-- 채팅방 생성 -->
+	<insert id="makechat" parameterType="String">
+		insert into chatroom(id)values(#{id})
+	</insert>
+	
+	<!-- 채팅방 참가 -->
+	<insert id="joinchat" parameterType="map">
+		insert into chat(chatroom_id,member_sn)values(#{chatroom_id},#{member_sn})
+	</insert>
+	
+	<!-- 채팅방 확인 -->
+	<select id="chatcheck" parameterType="map" resultType="String">
+	select chatroom_id from chat where member_sn in (#{sn1},#{sn2}) group by chatroom_id having count(*)>1
+	</select>
+	
+	<!-- 채팅 내용 출력 -->
+	<select id="chatting" parameterType="String" resultMap="chattingMap">
+	select * from chatting where chatroom_id =#{chatroom_id} order by rdate desc
+	</select>
+
+	<!-- 채팅 등록 -->
+	<insert id="savechatting" parameterType="chattingVO">
+		insert into chatting(chatroom_id,writer,contents)
+		values(#{chatroom_id},#{writer.sn},#{contents})
+	</insert>
+	
+<!-- 채팅 -->
+
+
+</mapper>

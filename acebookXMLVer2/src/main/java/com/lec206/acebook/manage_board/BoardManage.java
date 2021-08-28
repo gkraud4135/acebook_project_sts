@@ -569,5 +569,15 @@ public class BoardManage implements IBoardManage {
 		return new BusinessResult(randomboard);
 		
 	}
+	@Override
+	public BusinessResult randomonlike(int sn) {
+		
+		List<Integer> randomlike = null;
+		
+		randomlike = boardDAO.randomonlike(sn);
+		
+		return new BusinessResult(randomlike);
+		
+	}
 	
 }

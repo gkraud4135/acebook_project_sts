@@ -42,5 +42,6 @@ function 프로필변경(){
 	   if(profile.value==""){
 	      alert("변경할 프로필을 선택해주세요")
 	      return false;}
+	   alert('완료');
 	   return true;}
 </script>

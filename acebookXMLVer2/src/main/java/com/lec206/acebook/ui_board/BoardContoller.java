@@ -1075,5 +1075,26 @@ public class BoardContoller {
 		return "board/더미생성";
 		
 	}	
+	@RequestMapping(value="randomlike",method = RequestMethod.GET)
+	public String randomlike() {
+		
+		BusinessResult br = membermanage.selectAll();
+		List<Member> members = (List<Member>)br.getValue();
+		
+		
+		for(Member member : members) {
+
+			br = boardmanage.randomonlike(member.getSn());
+			List<Integer> boardnum = (List<Integer>)br.getValue();
+			
+			for(Integer boardlist : boardnum) {
+				boardmanage.likeProcess(boardlist,member.getSn(),0);
+			}
+			
+		}
+		
+		return "board/더미생성";
+		
+	}	
 
 }

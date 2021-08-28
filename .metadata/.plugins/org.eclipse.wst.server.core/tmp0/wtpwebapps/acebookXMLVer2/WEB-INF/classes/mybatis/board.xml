@@ -113,6 +113,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		insert into boardlike(board_sn,writer,boardlike.like)values(#{bno},#{mno},1)
 	</insert>
 	
+	<!-- 좋아요 누르지 않은 게시물 -->
+	<select id="randomonlike" parameterType="int" resultType="int">
+		select sn from board where sn not in 
+		(select board_sn from boardlike where writer =#{sn}) order by rand() limit 3
+	</select>
+	
 	<!-- 좋아요 취소 -->
 	<insert id="offlike" parameterType="map">
 		delete from boardlike where board_sn=#{bno} and writer=#{mno}

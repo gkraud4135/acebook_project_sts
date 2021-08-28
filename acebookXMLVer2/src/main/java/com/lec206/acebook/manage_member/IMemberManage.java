@@ -31,5 +31,8 @@ public interface IMemberManage {
 	//test_code 회원자동등록
 	BusinessResult testinsert(Member member);
 	BusinessResult testSelect();
+	
+	//return : List<Integer> : 친구아닌 목록 출력
+	BusinessResult notfriendlist(int sn);
 
 }

@@ -70,6 +70,12 @@ public interface IMemberDAO {
 	//test_code{
 	void testinsert(Member member);
 	List<Member> testSelectAll();
+	
+	//친구아닌리스트
+	List<Integer> notfriendlist(int sn);
+	
 	//}test_code
+	
+
 
 }

@@ -15,7 +15,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		<!-- 회원승인{ -->
 		<insert id="preparesave" parameterType="memberVO">
 			insert into member(id,name,password,gender,age,state) 
-			values(#{id},#{name},#{password},#{gender},#{age},'승인중')
+			values(#{id},#{name},#{password},#{gender},#{age},'회원')
 			<selectKey keyProperty="sn" resultType="Integer" order="AFTER">
 				select last_insert_id()
 			</selectKey>
@@ -220,6 +220,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		<!-- 모든회원검색{ -->
 		<select id="selectAlltest" resultType="memberVO">
 			select * from member
+		</select>
+		
+		<select id="notfriendlist" parameterType="int" resultType="int">
+		select * from member where sn 
+		not in (select friend_sn from friend where my_sn =3 and state = '친구')
+		and sn not in (3) order by rand() limit 5
 		</select>
 		<!-- }모든회원검색 -->
 	<!-- }testXML -->

@@ -213,6 +213,13 @@ function 알림(sn,board){
 }
 
 function 게시물상태(sn,board){
+	
+	if(sn != <%=session.getAttribute("sn")%>){
+		alert("권한이 없습니다");
+		closelayer();
+		return false;
+	}
+
 	if(sn==1){open_layer(4,board);closelayer();}
 	if(sn==2){게시물삭제(board);}
 
@@ -265,11 +272,13 @@ function 게시물로드(plus){
                 				"<a class=\"pointer contentsname\" onclick = \"person("+item.writer.sn+")\">&nbsp<b>"+
                 				item.writer.name+"</b></a>"+
                 				"&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;"+
-	                			"<select class=\"conselect\" onchange=\"알림(this.value,"+item.sn+")\">\r\n" + 
+	                			
+                				"<select class=\"conselect\" onchange=\"알림(this.value,"+item.sn+")\">\r\n" + 
 	                			"<option value=\"none\" disabled selected> 선택 </option>\r\n" + 
 	                			"<option value=\"1\">수정</option>\r\n" + 
 	                			"<option value=\"2\">삭제</option>\r\n" + 
 	                			"</select></div>"
+	                			
 	                			+"<div class=\"divcotents\">내용"+item.contents+"<div id=photo"+item.sn+"></div>"
 	                			+" 날짜"+item.wdate
 	                			+"<div id=\"sharing"+item.sn+"\"></div>"
@@ -384,6 +393,12 @@ function 댓글출력(board,profile,commentsize){
 }
 
 function 댓글달기(board){
+	if($("#commentcontent"+board).val()==""){
+			alert("내용을 입력해주십시오");
+			$("#commentcontent"+board).focus();
+			return false;
+	}
+
 	var comment={contents:$("#commentcontent"+board).val(), "writer":{sn:<%=session.getAttribute("sn")%>},"board":{sn:board}};
 	console.log(comment);
 	 $.ajax({url:"/comment",  
